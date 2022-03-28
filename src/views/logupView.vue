@@ -4,7 +4,6 @@
       <div class="row">
         <div class="col-sm-8 offset-sm-2">
           <div>
-            
             <form @submit.prevent="handleSubmit" class="login-form">
               <h2>Registrate</h2>              
               <div class="form-group">
@@ -23,7 +22,7 @@
                   v-if="submitted && !$v.user.nickname.required"
                   class="invalid-feedback"
                 >
-                  Last Name is required
+                  El nombre de Usuario es Necesario
                 </div>
               </div>
               <div class="form-group">
@@ -40,8 +39,8 @@
                   v-if="submitted && $v.user.email.$error"
                   class="invalid-feedback"
                 >
-                  <span v-if="!$v.user.email.required">Email is required</span>
-                  <span v-if="!$v.user.email.email">Email is invalid</span>
+                  <span v-if="!$v.user.email.required">Email es Necesario</span>
+                  <span v-if="!$v.user.email.email">Email es invalido</span>
                 </div>
               </div>
               <div class="form-group">
@@ -61,10 +60,10 @@
                   class="invalid-feedback"
                 >
                   <span v-if="!$v.user.password.required"
-                    >Password is required</span
+                    >Password es requerido</span
                   >
                   <span v-if="!$v.user.password.minLength"
-                    >Password must be at least 6 characters</span
+                    >Password debe contener 6 caracteres</span
                   >
                 </div>
               </div>              
@@ -81,7 +80,8 @@
 
 <script>
 import { required, email, minLength } from "vuelidate/lib/validators";
-
+import axios from 'axios';
+//import Vue from 'vue'
 export default {
   name: "app",
   data() {
@@ -111,8 +111,26 @@ export default {
       if (this.$v.$invalid) {
         return;
       }
-
-      alert("SUCCESS!! :-)\n\n" + JSON.stringify(this.user));
+      var form_data=new FormData()
+      form_data.append('nickname', this.user.nickname)
+      form_data.append('email', this.user.email)
+      form_data.append('password', this.user.password)
+      form_data.append('status', this.user.status)
+      axios({
+        method:'post',
+        url: this.url+'/user/newUser',
+        data:form_data,
+        headers: { "Content-Type": "multipart/form-data" }  
+      })
+      .then((res)=>{
+        if(res.data.codigo===200) {
+          this.$router.push('/login');
+        }
+        
+      })
+      .catch((res)=>{
+        console.log(res);
+      })
     },
   },
 };

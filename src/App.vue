@@ -1,6 +1,6 @@
 <template>
   <div id="app"> 
-      <homeView></homeView>            
+      <homeView/>
   </div>
 </template>
 

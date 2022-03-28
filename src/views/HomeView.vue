@@ -1,19 +1,18 @@
 <template>
 <div id="home"> 
-        <NavComponent/>        
-        <router-view />
+        <navComponent/>
 </div>
 </template>
 
 
 <script>
 // @ is an alias to /src
-import NavComponent from '@/components/NavComponent.vue'
+import navComponent from '@/components/NavComponent.vue'
 
 export default {
 name: 'homeView',
 components: {
-    NavComponent
+    navComponent
 }
 }
 </script>

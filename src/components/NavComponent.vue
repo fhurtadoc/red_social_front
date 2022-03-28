@@ -5,14 +5,9 @@
                     <b-nav-item active ><router-link to="/logup">Registrate</router-link></b-nav-item>
                     <b-nav-item active ><router-link to="/login">Ingresa</router-link></b-nav-item>                    
                 </b-navbar-nav>
-            </b-navbar>
-            <b-navbar type="dark" variant="dark" class="ml-auto" id="nav-perfil" hidden>
-                <b-navbar-nav class="items">                    
-                    <b-nav-item active ><router-link to="">Salir</router-link></b-nav-item>                    
-                </b-navbar-nav>
-            </b-navbar>
-    </div>    
-
+            </b-navbar> 
+        <router-view/>           
+    </div>
 </template>
 
 <script>

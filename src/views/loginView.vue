@@ -1,32 +1,128 @@
 <template>
-  <div class="login-form">      
-      <h2>Ingresar</h2>    
-      <b-form inline @submit.prevent="login">        
-        <label class="sr-only" for="inline-form-input-name">Email</label>
-        <b-input-group prepend="@" class="mb-2 mr-sm-2 mb-sm-0">
-        <b-form-input
-          id="inline-form-input-name"
-          class="mb-2 mr-sm-2 mb-sm-0"
-          placeholder="Jane Doe"
-          name="email"
-          v-model="user_login.email"
-        ></b-form-input>
-        </b-input-group>
-        <label class="sr-only" for="inline-form-input-username">Password</label>        
-        <b-form-input 
-        id="inline-form-input-username" 
-        placeholder="Password" 
-        type="password" 
-        name="password"
-        v-model="user_login.password"
-        ></b-form-input>
-        <div v-if="!$v.user_login.password.required" class="invalid-feedback">
-          Password is required
-        </div> 
-        <b-button type="submit" id="button">Ingresar</b-button>
-      </b-form>
-</div>  
+  <div class="jumbotron">
+    <div class="container">
+      <div class="row">
+        <div class="col-sm-8 offset-sm-2">
+          <div>
+            <form @submit.prevent="handleSubmit" class="login-form">
+              <h2>Ingresar</h2>                            
+              <div class="form-group">
+                <label for="email">Email</label>
+                <input
+                  type="email"
+                  v-model="user.email"
+                  id="email"
+                  name="email"
+                  class="form-control"
+                  :class="{ 'is-invalid': submitted && $v.user.email.$error }"
+                />
+                <div
+                  v-if="submitted && $v.user.email.$error"
+                  class="invalid-feedback"
+                >
+                  <span v-if="!$v.user.email.required">Email es Necesario</span>
+                  <span v-if="!$v.user.email.email">Email es invalido</span>
+                </div>
+              </div>
+              <div class="form-group">
+                <label for="password">Password</label>
+                <input
+                  type="password"
+                  v-model="user.password"
+                  id="password"
+                  name="password"
+                  class="form-control"
+                  :class="{
+                    'is-invalid': submitted && $v.user.password.$error,
+                  }"
+                />
+                <div
+                  v-if="submitted && $v.user.password.$error"
+                  class="invalid-feedback"
+                >
+                  <span v-if="!$v.user.password.required"
+                    >Password es requerido</span
+                  >
+                  <span v-if="!$v.user.password.minLength"
+                    >Password debe contener 6 caracteres</span
+                  >
+                </div>
+              </div>              
+              <div class="form-group">
+                <button class="btn btn-secondary" >Register</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
+
+<script>
+import { required, email, minLength } from "vuelidate/lib/validators";
+import enviromentApi from '../../enviromentApi';
+import axios from 'axios';
+import Vue from 'vue'
+
+
+export default {
+  name: "app",
+  data() {
+    return {
+      url:enviromentApi.URL,
+      user: {                
+        email: "",
+        password: "",        
+      },
+      submitted: false,
+    };
+  },
+  validations: {
+    user: {      
+      email: { required, email },
+      password: { required, minLength: minLength(6) },      
+    },
+  },
+  methods: {
+    handleSubmit() {
+      this.submitted = true;      
+      // stop here if form is invalid
+      this.$v.$touch();
+      if (this.$v.$invalid) {
+        return;
+      }
+      var form_data=new FormData();
+      form_data.append('email',this.user.email)
+      form_data.append('password',this.user.password)
+      axios({
+        method:'post',
+        url: this.url+'/login/login',
+        data:form_data,
+        headers: { "Content-Type": "application/json"}        
+      }).then((res)=>{
+        if(res.data.codigo===402) {
+          alert(res.data.menssaje + "registrate")
+          setTimeout(()=>{
+            this.$router.push('/logup');
+          },1000)
+        }
+        if(res.data.codigo===200) {
+          const payload = Vue.$jwt.decode(res.data.token, 'process.env.TOKEN_FORGOT')
+          var user=payload.user;
+          var token=res.data.token 
+          localStorage.setItem('User', JSON.stringify(user));
+          localStorage.setItem('Token', JSON.stringify(token));
+          this.$router.push('/Perfil');
+        }
+      })
+      .catch((err)=>{
+        console.log(err);
+      })
+    },
+  },
+};
+</script>
 
 <style scoped>
   .login-form{
@@ -35,50 +131,11 @@
     justify-items: center;
     margin-top: 10%;    
   }
-  #button{
+  .btn-secondary{
     margin-top: 5%;
     width: 100%;
   }
+  .alert{
+    color: red;
+  }
 </style>
-
-<script>
-
-//import User_model from '../models/User_model'
-import {required, email, minLength} from '@vuelidate/validators'
-export default {
-    name: 'loginView', 
-    components:{
-      
-    },
-    validations:{
-      user_login:{
-            email:{
-                required,
-                email
-            },
-            nickname:{
-                required,
-                email
-            },
-            password:{
-                required,
-                minLength: minLength(8),
-            }
-        }
-    },
-    data(){
-      return{
-        user_login:{
-              email:'',                   
-              password:'',
-            }
-      }
-    },
-    methods:{
-      login(){
-        console.log(this.user_login);
-      }
-    }
-
-}
-</script>
