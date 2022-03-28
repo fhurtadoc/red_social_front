@@ -270,7 +270,7 @@ export default {
         grid-area: a;
         width: 100%;
         height: 200px;
-        background-color: aqua;
+        background-color: grey;
     }
 
     .photo_perfil{   
