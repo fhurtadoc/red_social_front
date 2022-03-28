@@ -1,7 +1,7 @@
 <template>
   <div class="login-form">      
       <h2>Ingresar</h2>    
-      <b-form inline @submit.prevent="login()">        
+      <b-form inline @submit.prevent="login">        
         <label class="sr-only" for="inline-form-input-name">Email</label>
         <b-input-group prepend="@" class="mb-2 mr-sm-2 mb-sm-0">
         <b-form-input
@@ -20,6 +20,9 @@
         name="password"
         v-model="user_login.password"
         ></b-form-input>
+        <div v-if="!$v.user_login.password.required" class="invalid-feedback">
+          Password is required
+        </div> 
         <b-button type="submit" id="button">Ingresar</b-button>
       </b-form>
 </div>  
@@ -41,7 +44,7 @@
 <script>
 
 //import User_model from '../models/User_model'
-import {required} from '@vuelidate/validators'
+import {required, email, minLength} from '@vuelidate/validators'
 export default {
     name: 'loginView', 
     components:{
@@ -49,10 +52,19 @@ export default {
     },
     validations:{
       user_login:{
-        email:{
-            required,
+            email:{
+                required,
+                email
+            },
+            nickname:{
+                required,
+                email
+            },
+            password:{
+                required,
+                minLength: minLength(8),
+            }
         }
-      }
     },
     data(){
       return{
