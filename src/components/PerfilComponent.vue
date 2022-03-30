@@ -107,7 +107,7 @@
                                 <button type="button" class="btn btn-sm btn-outline-secondary">Eliminar</button>
                                 <button type="button" class="btn btn-sm btn-outline-secondary">Ver</button>
                                 </div>
-                                <small class="text-muted">{{post.date.slice(0, 19).replace('T', ' ')}}</small>
+                                <small v-if="post.date" class="text-muted">{{post.date.slice(0, 19).replace('T', ' ')}}</small>                                
                             </div>
                             </div>
                         </div>
@@ -117,17 +117,23 @@
             <div class="friends">
                 
                 <div class="form-group" >
-                    <label for="">Buscar Amigos</label><br>
+                    <label for="">Buscar Amigos por su Email</label><br>
                     <input type="text"  @keypress="friendsfindasync" v-model='email'>                    
                 </div>
                 <div class="continer_findfriends">
                     
-                    <div v-if="find_fiends">
+                    <div v-if="find_fiends.length===0">
                         <span>Tu eres el unico en nuestra Red Social</span>
                     </div>
                     <div v-else>
-                        <div v-for="(friend, index) in find_fiends" :key="index" >
-                            
+                        <div v-for="(friend, index) in find_fiends" :key="index" id="continer_friends">
+                            <div>
+                                <span>nombre:{{friend.nickname}}</span>
+                                <span>email:{{friend.email}}</span>                                
+                                <button class="btn btn-light" >
+                                    <b-icon icon="check-square" scale="2" variant="success" v-on:click.prevent="apply_friend(friend.id)"></b-icon>                                    
+                                </button>                                
+                                </div>                            
                         </div>
                     </div>
 
@@ -154,10 +160,7 @@ export default {
             description:{
                 required,
                 minLength:minLength(8)
-            },
-            img:{
-                required,
-            }
+            },            
         }
     },    
     data() {
@@ -195,6 +198,10 @@ export default {
                 
     },
     methods:{
+
+        apply_friend(id){
+            console.log(id);
+        },
         salir(){
             //console.log('salir');
             localStorage.removeItem('User')
@@ -261,16 +268,18 @@ export default {
         
 
         friendsfindasync(){
-            setTimeout(()=>{                
-                
+            setTimeout(()=>{  
                 axios({
                     method:"post",
                     url: this.url+'/user/findFriends',
                     data:{email: this.email}
                 })
                 .then((res)=>{
-                    if(res.data.codigo===204 || res.data.codigo===200){
+                    if(res.data.codigo===204 || res.data.codigo===402){
+                        console.log('error en la consulta');
+                    }else{                        
                         this.find_fiends=res.data
+                        console.log(this.find_fiends);
                     }
                 })
                 .catch((res)=>{
@@ -417,6 +426,20 @@ export default {
         overflow: scroll;
         scrollbar-width: thin;
         scrollbar-color: #6969dd #e0e0e0;
+    }
+
+    #continer_friends > div{
+        display: flex;
+        flex-flow: column;
+        box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;
+        padding: 5%;
+        width: 300px;
+        height: auto;
+        text-align: center;
+    }
+
+    #continer_friends > div button{
+        margin-top: 1% ;
     }
 
 

@@ -80,8 +80,8 @@
 
 <script>
 import { required, email, minLength } from "vuelidate/lib/validators";
-import enviromentApi from '../../enviromentApi';
 import axios from 'axios';
+import enviromentApi from '../../enviromentApi';
 //import Vue from 'vue'
 export default {
   name: "app",
@@ -117,18 +117,21 @@ export default {
       form_data.append('nickname', this.user.nickname)
       form_data.append('email', this.user.email)
       form_data.append('password', this.user.password)
-      form_data.append('status', this.user.status)*/
+      form_data.append('status', this.user.status)      
+      console.log(this.url+'/user/newUser');*/
       axios({
-                method:"post",
-                url: this.url+'/user/newUser',
-                data:this.user
-            })
-            .then((res)=>{
-                console.log(res);
-            })
-            .catch((res)=>{
-                console.log(res);
-            })
+        method:'post',
+        url: this.url+'/user/newUser',
+        data:this.user,        
+      })
+      .then((res)=>{
+        if(res.data.codigo===200) {
+          this.$router.push('/login');
+        }
+      })
+      .catch((res)=>{
+        console.log(res);
+      })
     },
   },
 };

@@ -49,7 +49,7 @@
                 </div>
               </div>              
               <div class="form-group">
-                <button class="btn btn-secondary" >Register</button>
+                <button class="btn btn-secondary" >Ingresar</button>
               </div>
             </form>
           </div>
