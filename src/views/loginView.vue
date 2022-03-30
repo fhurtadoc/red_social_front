@@ -4,7 +4,7 @@
       <div class="row">
         <div class="col-sm-8 offset-sm-2">
           <div>
-            <form @submit.prevent="handleSubmit" class="login-form">
+            <form @submit.prevent="handleSubmit" class="login-form">              
               <h2>Ingresar</h2>                            
               <div class="form-group">
                 <label for="email">Email</label>
@@ -85,40 +85,53 @@ export default {
     },
   },
   methods: {
-    handleSubmit() {
+    handleSubmit() {      
       this.submitted = true;      
       // stop here if form is invalid
       this.$v.$touch();
       if (this.$v.$invalid) {
         return;
-      }
-      var form_data=new FormData();
+      }      
+      /*let form_data=new FormData();
       form_data.append('email',this.user.email)
-      form_data.append('password',this.user.password)
+      form_data.append('password',this.user.password) */
       axios({
-        method:'post',
-        url: this.url+'/login/login',
-        data:form_data,
-        headers: { "Content-Type": "application/json"}        
-      }).then((res)=>{
-        if(res.data.codigo===402) {
-          alert(res.data.menssaje + "registrate")
-          setTimeout(()=>{
-            this.$router.push('/logup');
-          },1000)
-        }
-        if(res.data.codigo===200) {
-          const payload = Vue.$jwt.decode(res.data.token, 'process.env.TOKEN_FORGOT')
-          var user=payload.user;
-          var token=res.data.token 
-          localStorage.setItem('User', JSON.stringify(user));
-          localStorage.setItem('Token', JSON.stringify(token));
-          this.$router.push('/Perfil');
-        }
+                method:"post",
+                url: this.url+'/user/login',
+                data:this.user,                  
+            })
+            .then((res)=>{
+                if(res.data.codigo===402) {
+                    alert(res.data.menssaje + "registrate")
+                    setTimeout(()=>{
+                    this.$router.push('/logup');
+                  },1000)
+              }
+                if(res.data.codigo===200) {
+                const payload = Vue.$jwt.decode(res.data.token, 'process.env.TOKEN_FORGOT')
+                var user=payload.user;
+                var token=res.data.token 
+                localStorage.setItem('User', JSON.stringify(user));
+                localStorage.setItem('Token', JSON.stringify(token));
+                this.$router.push('/Perfil');
+              }
+            })
+            .catch((res)=>{
+                console.log(res);
+            })
+
+      /*axios({
+                method:"post",
+                url: this.url+'/login/newUser',
+                data:form_data,  
+                headers: { "Content-Type": "multipart/form-data"}                              
+            })
+      .then((res)=>{
+        
       })
       .catch((err)=>{
         console.log(err);
-      })
+      })*/
     },
   },
 };

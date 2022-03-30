@@ -20,16 +20,15 @@
         <div class="container-perfil">
             <div class="portada">
                     
-            </div>
+            </div>                  
             <figure v-if="imagen" class="photo_perfil">
-                    <img :src="`${url+'/'+post.img}`">
+                    <img :src="`${url+'/static/perfil'+post.img}`">
             </figure> 
             <figure v-else class="photo_perfil">
                     <img src="https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png">
             </figure>                                                              
             <div class="post">
-            <form @submit.prevent="create_post" class="form_post">
-                <h2>Crea un nuevo Post</h2>                            
+            <form @submit.prevent="create_post" class="form_post" >                
                 <div class="form-group">                    
                     <input
                     type="text"
@@ -86,19 +85,18 @@
                                 <div class="btn-group">
                                 <button type="button" class="btn btn-sm btn-outline-secondary">Eliminar</button>
                                 <button type="button" class="btn btn-sm btn-outline-secondary">Ver</button>
-                                </div>
-                                <small class="text-muted">9 mins</small>
+                                </div>                                
                             </div>
                             </div>
                         </div>
                     </div>                    
                 </div>
-                <div v-for="(post, index) in posts" :key="index" >
+                <div v-for="(post, index) in posts" :key="index"  >
                     <div class="col">
                         <div class="card shadow-sm">                            
                             <div class="card-body">
                             <figure v-if="post.img">
-                                <img :src="`${url+'/'+post.img}`">
+                                  <img :src="`${url+'/static/img_post/'+post.img}`">
                             </figure> 
                             <figure v-else>
                                 <img src="https://plantillasdememes.com/img/plantillas/imagen-no-disponible01601774755.jpg">
@@ -109,7 +107,7 @@
                                 <button type="button" class="btn btn-sm btn-outline-secondary">Eliminar</button>
                                 <button type="button" class="btn btn-sm btn-outline-secondary">Ver</button>
                                 </div>
-                                <small class="text-muted">9 mins</small>
+                                <small class="text-muted">{{post.date.slice(0, 19).replace('T', ' ')}}</small>
                             </div>
                             </div>
                         </div>
@@ -117,7 +115,24 @@
                 </div>
             </div>
             <div class="friends">
-                <h1>fiends</h1>                
+                
+                <div class="form-group" >
+                    <label for="">Buscar Amigos</label><br>
+                    <input type="text"  @keypress="friendsfindasync" v-model='email'>                    
+                </div>
+                <div class="continer_findfriends">
+                    
+                    <div v-if="find_fiends">
+                        <span>Tu eres el unico en nuestra Red Social</span>
+                    </div>
+                    <div v-else>
+                        <div v-for="(friend, index) in find_fiends" :key="index" >
+                            
+                        </div>
+                    </div>
+
+                </div>
+                
             </div>              
         </div>        
     </div>    
@@ -135,7 +150,7 @@ import { required, minLength} from "vuelidate/lib/validators";
 export default {
     name: 'perfilComponent',
     validations:{
-        post:{
+        post:{            
             description:{
                 required,
                 minLength:minLength(8)
@@ -147,9 +162,12 @@ export default {
     },    
     data() {
     return {
+            email:"",
+            find_fiends:[],
             submitted: false,
             imagen:null,
             post: {
+                id_user:"",
                 description:"",
                 img:""
             },
@@ -184,13 +202,10 @@ export default {
             this.$router.push('/logup');
         },        
         get_posts(){
-            let form_data=new FormData()            
-            form_data.append('id_user', this.user.id);
             axios({
                 method:'post',
                 url: this.url+'/post/list',
-                data:form_data,                
-                headers: { "Content-Type": "multipart/form-data" } 
+                data:{id_user:this.user.id},                                
             })
             .then((res)=>{
                 this.posts=res.data;
@@ -204,13 +219,13 @@ export default {
             
         },
         upload_file(e){
-            var file=e.target.files;            
+            let file=e.target.files;              
             if(!file){
                 console.log("erro");
             }else{
                 var extence=file[0].name.split('.');
                 if(extence[1]==="png" || extence[1]==="jpg" || extence[1]==="jpeg"){
-                    this.post.img=file                     
+                    this.post.img=file[0]
                 }else{
                     
                     alert("no se permite ese formato");
@@ -220,17 +235,52 @@ export default {
         },
         create_post(){
             this.submitted=true
+            this.post.id_user=this.user.id
             let form_post=new FormData()
             form_post.append('description', this.post.description)
             form_post.append('img', this.post.img)
-            form_post.append('id_user', this.user.id)
+            form_post.append('id_user', this.user.id)            
+            form_post.append('date', new Date().toLocaleDateString())            
             axios({
                 method:"post",
                 url: this.url+'/post/create',
                 data:form_post,  
-                headers: { "Content-Type": "application/json"}                              
+                headers: { "Content-Type": "multipart/form-data"}                              
             })
-        }
+            .then((res)=>{
+                console.log(res.data.codigo==200);
+                if(res.data.codigo==200){
+                    location.reload()
+                    this.$router.go[0]
+                }
+            })
+            .catch((res)=>{
+                console.log(res);
+            })
+        }, 
+        
+
+        friendsfindasync(){
+            setTimeout(()=>{                
+                
+                axios({
+                    method:"post",
+                    url: this.url+'/user/findFriends',
+                    data:{email: this.email}
+                })
+                .then((res)=>{
+                    if(res.data.codigo===204 || res.data.codigo===200){
+                        this.find_fiends=res.data
+                    }
+                })
+                .catch((res)=>{
+                    console.log(res);
+                })            
+            },2000)
+        }, 
+
+
+
     }
 }
 </script>
@@ -310,7 +360,7 @@ export default {
          
 
     }
-
+    
     .form_post button{
         margin-top: 2%; 
         color: white;       
@@ -333,11 +383,42 @@ export default {
     }
 
     .friends{
-        grid-area: f; 
-        border: 1px solid red;
+        grid-area: f;         
         margin-top: 20%;
+        width: 90%;
         justify-self: center;
     }
+
+    .friends .form-group{
+        padding: 5%;
+        justify-self: center;
+        display: grid;
+        justify-content: center;
+    }
+
+    .friends .form-group > input[type=text]{
+        margin-top: 5%;
+        webkit-border-radius: 20px;
+        -moz-border-radius: 20px;
+        border-radius: 20px;
+        border: 1px solid gray;
+        color: black;
+        width: 250px;
+        height: 40px;
+        padding-left: 10px;
+    }
+    
+
+    .continer_findfriends{
+        width: 100;
+        height: 300px;                
+        box-shadow: rgba(0, 0, 0, 0.15) 1.95px 1.95px 2.6px;       
+        display: flex;
+        overflow: scroll;
+        scrollbar-width: thin;
+        scrollbar-color: #6969dd #e0e0e0;
+    }
+
 
     @media (min-width: 1164px){
     .container-perfil{
